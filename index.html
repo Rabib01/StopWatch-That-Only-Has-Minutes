@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stopwatch</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    background: #111;
+    color: #f2f2f2;
+    font-family: system-ui, sans-serif;
+  }
+  #display {
+    font-size: clamp(64px, 18vw, 140px);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 2px;
+  }
+  .buttons { display: flex; gap: 12px; }
+  button {
+    font-size: 18px;
+    padding: 12px 28px;
+    border: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #fff;
+    background: #2a2a2a;
+  }
+  button:hover { background: #3a3a3a; }
+  #toggle { background: #1f8f4e; }
+  #toggle:hover { background: #26a95c; }
+  #toggle.running { background: #c0392b; }
+  #toggle.running:hover { background: #d94a3a; }
+</style>
+</head>
+<body>
+  <div id="display">00:00</div>
+  <div class="buttons">
+    <button id="toggle">Start</button>
+    <button id="reset">Reset</button>
+  </div>
+
+<script>
+  // Shows MM:SS only. Minutes keep counting past 59 (e.g. 75:30), no hours.
+  const display = document.getElementById("display");
+  const toggleBtn = document.getElementById("toggle");
+  const resetBtn = document.getElementById("reset");
+
+  let elapsedMs = 0;     // time accumulated from earlier runs
+  let startedAt = null;  // timestamp of the current run, null when stopped
+  let timer = null;
+
+  function render() {
+    const total = elapsedMs + (startedAt ? Date.now() - startedAt : 0);
+    const totalSeconds = Math.floor(total / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    display.textContent =
+      String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+  }
+
+  function start() {
+    startedAt = Date.now();
+    timer = setInterval(render, 100);
+    toggleBtn.textContent = "Stop";
+    toggleBtn.classList.add("running");
+  }
+
+  function stop() {
+    elapsedMs += Date.now() - startedAt;
+    startedAt = null;
+    clearInterval(timer);
+    toggleBtn.textContent = "Start";
+    toggleBtn.classList.remove("running");
+    render();
+  }
+
+  toggleBtn.onclick = () => (startedAt ? stop() : start());
+
+  resetBtn.onclick = () => {
+    if (startedAt) stop();
+    elapsedMs = 0;
+    render();
+  };
+
+  render();
+</script>
+</body>
+</html>
